@@ -1,0 +1,163 @@
+package net.bigpoint.assessment.gasstation.impl;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.logging.Logger;
+
+import net.bigpoint.assessment.gasstation.GasPump;
+import net.bigpoint.assessment.gasstation.GasPumpStock;
+import net.bigpoint.assessment.gasstation.GasStation;
+import net.bigpoint.assessment.gasstation.GasType;
+import net.bigpoint.assessment.gasstation.exceptions.GasTooExpensiveException;
+import net.bigpoint.assessment.gasstation.exceptions.NotEnoughGasException;
+
+public class GasStationImpl implements GasStation {
+
+	private final HashMap<GasType,Double> prices = new HashMap<GasType,Double>();
+
+	private final GasStationStockImpl gasStationStock =  new GasStationStockImpl();;
+
+	private double revenue = 0;
+
+	private int numberOfCancellationsNoGas = 0;
+
+	private int numberOfCancellationsTooExpensive = 0;
+
+	private int numberOfSales = 0;
+
+	private static Logger log = Logger.getLogger(GasStationImpl.class.getName());
+
+	public void addGasPump(GasPump pump) {
+		gasStationStock.addGasPump(pump);
+	}
+
+	public double buyGas(GasType type, double amountInLiters,double maxPricePerLiter) throws NotEnoughGasException,	GasTooExpensiveException {
+
+		if(isPriceAboveMax(type, maxPricePerLiter)){
+			numberOfCancellationsTooExpensive++;
+			throw new GasTooExpensiveException();
+		}
+		double price = 0;
+		try {
+			synchronized (type) {
+				
+				GasPumpStock gasPumpStock = gasStationStock.findBestGasPump(type , amountInLiters);
+
+				synchronized (gasPumpStock) {
+					log.info("W - G.T: "+type.name() + ", liters: "+amountInLiters+"\n"+"-- > Start - G.T: "+type.name() + ", liters: "+amountInLiters);
+					doGasOperation(amountInLiters, gasPumpStock);
+					log.info("bye! G.T: "+type.name() + ", liters: "+amountInLiters + " sales: "+numberOfSales);
+				}
+			}
+			price(type,amountInLiters); 
+			revenue += price;
+		} catch (NotEnoughGasException ex) {
+			incrementCancellations();
+		}
+		return price;
+	}
+
+	private void incrementCancellations() {
+		numberOfCancellationsNoGas++;
+		log.info("numberOfCancellationsNoGas:"+numberOfCancellationsNoGas);
+	}
+
+	private void doGasOperation(double amountInLiters, GasPumpStock gasPumpStock) {
+		incrementSales();
+
+		//do the start
+		gasPumpStock.start();
+
+		//do the operation of fill
+		gasPumpStock.getGasPump().pumpGas(amountInLiters);
+
+		gasPumpStock.endOperation();
+	}
+
+	private void incrementSales() {
+		numberOfSales++;
+		log.info("numberOfSales:"+numberOfSales);
+	}
+
+	private double price(GasType type, double amountInLiters) {
+		return prices.get(type) * amountInLiters;
+	}
+
+	private boolean isPriceAboveMax(GasType type , double maxPricePerLiter){
+		return prices.get(type) > maxPricePerLiter;
+	}
+
+	public final Collection<GasPump> getGasPumps() {
+		return gasStationStock.getGasPumps();
+	}
+
+	public int getNumberOfCancellationsNoGas() {
+		return numberOfCancellationsNoGas;
+	}
+
+	public int getNumberOfCancellationsTooExpensive() {
+		return numberOfCancellationsTooExpensive;
+	}
+
+	public int getNumberOfSales() {
+		return numberOfSales;
+	}
+
+	public double getPrice(GasType type) {
+		return prices.get(type);
+	}
+
+	public double getRevenue() {
+		return revenue;
+	}
+
+	public void setPrice(GasType type, double price) {
+		prices.put(type, price);
+	}
+
+	/**
+	 * Intended only for debugging.
+	 *
+	 * <P>Here, a generic implementation uses reflection to print
+	 * names and values of all fields <em>declared in this class</em>. Note that
+	 * superclass fields are left out of this implementation.
+	 *
+	 * <p>The format of the presentation could be standardized by using
+	 * a MessageFormat object with a standard pattern.
+	 */
+	@Override public String toString() {
+		StringBuilder result = new StringBuilder();
+		String newLine = System.getProperty("line.separator");
+
+		//print field names paired with their values
+		result.append(newLine);
+		result.append( "################################## " );
+		result.append(newLine);
+		result.append( "GasType/price: " );
+		result.append(newLine);
+		for ( GasType gasType: GasType.values() ) {
+			result.append( gasType.name());
+			result.append("/"+prices.get(gasType));
+			result.append(newLine);
+		}
+
+		result.append(newLine);
+
+		result.append( "GasPumps: " );
+		result.append(newLine);
+		result.append(gasStationStock.toString());
+		result.append(newLine);
+
+		result.append( "revenue: " +revenue +newLine);
+		result.append( "numberOfSales: " +numberOfSales+newLine);
+
+		result.append( "numberOfCancellationsNoGas: " +numberOfCancellationsNoGas +newLine);
+		result.append( "numberOfCancellationsTooExpensive: " +numberOfCancellationsTooExpensive);
+
+		result.append(newLine);
+		result.append( "################################## " );
+
+		return result.toString();
+	}
+
+}

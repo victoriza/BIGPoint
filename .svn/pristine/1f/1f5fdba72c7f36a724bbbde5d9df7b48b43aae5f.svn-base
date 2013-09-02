@@ -1,0 +1,68 @@
+package net.bigpoint.assessment.gasstation.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.PriorityQueue;
+
+import net.bigpoint.assessment.gasstation.GasPump;
+import net.bigpoint.assessment.gasstation.GasPumpStock;
+import net.bigpoint.assessment.gasstation.GasStationStock;
+import net.bigpoint.assessment.gasstation.GasType;
+import net.bigpoint.assessment.gasstation.exceptions.NotEnoughGasException;
+
+public class GasStationStockImpl implements GasStationStock {
+
+	private final List<GasPump> gasPumps = new ArrayList<GasPump>();
+
+	private final List<GasPumpStock> gasPumpStocks = new ArrayList<GasPumpStock>();
+
+	public void addGasPump(GasPump gasPump) {
+		gasPumpStocks.add(new GasPumpStock(gasPump));
+		gasPumps.add(gasPump);
+	}
+
+	public List<GasPump> getGasPumps() {
+		return gasPumps;
+	}
+
+	public GasPumpStock prepaidOnBestGasPump(GasType type, double requestedLiters)throws NotEnoughGasException{
+
+		GasPumpStock gasPump;
+
+		synchronized (type) {
+			gasPump = findBestGasPump(type , requestedLiters);
+
+			if (gasPump == null) {
+				throw new NotEnoughGasException();
+			}
+			gasPump.addPrepaid(requestedLiters);
+		}
+		return gasPump;
+	}
+
+	public GasPumpStock findBestGasPump(GasType type, double requestedLiters)throws NotEnoughGasException{
+		PriorityQueue<GasPumpStock> validGasPumpStocks = new PriorityQueue<GasPumpStock>();
+		for (GasPumpStock gasPumpS : gasPumpStocks) {
+			if (gasPumpS.getGasPump().getGasType() == type && (gasPumpS.getAvailableLiters() >= requestedLiters)) {
+				validGasPumpStocks.add(gasPumpS);
+			}
+		}
+		//we cannot do it
+		if (validGasPumpStocks.isEmpty()){
+				throw new NotEnoughGasException();
+		}
+		return validGasPumpStocks.poll();
+		
+	}
+
+
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		String newLine = System.getProperty("line.separator");
+		for (GasPumpStock gasPumpStock: gasPumpStocks) {
+			result.append( gasPumpStock.toString());
+			result.append(newLine);
+		}
+		return result.toString();
+	}
+}

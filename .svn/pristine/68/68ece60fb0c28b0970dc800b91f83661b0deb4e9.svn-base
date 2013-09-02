@@ -1,0 +1,65 @@
+package net.bigpoint.assessment.gasstation;
+
+import java.util.Date;
+
+public class GasPumpStock implements Comparable<GasPumpStock>{
+
+	private double totalPrepaidLiters;
+
+	private Date startingTime;
+
+	private GasPump gasPump;
+
+	public GasPumpStock(GasPump gp){
+		this.gasPump = gp;
+		this.totalPrepaidLiters = 0;
+	}
+
+	public void addPrepaid(double prepaidLiters){
+		this.totalPrepaidLiters = prepaidLiters;
+	}
+	
+	public void start(){
+		this.startingTime = new Date();
+	}
+	
+	public void endOperation(){
+		this.totalPrepaidLiters = 0;
+		this.startingTime = null;
+	}
+
+	public GasPump getGasPump() {
+		return gasPump;
+	}
+
+	public double getTotalPrepaidLiters() {
+		return totalPrepaidLiters;
+	}
+
+	public int compareTo(GasPumpStock p2){
+		return (remainingTime() < p2.remainingTime() ? -1 : (remainingTime()==p2.remainingTime() ? 0 : 1));
+	}
+
+	private int remainingTime() {
+		if (totalPrepaidLiters == 0 || startingTime == null) {
+			return 0;
+		} else {
+			long elapsedTime = (new Date().getTime() - startingTime.getTime());
+			return Math.max((int)(totalPrepaidLiters - elapsedTime) , 0);
+		}
+	}
+
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		s.append("remaining time: ");
+		s.append(remainingTime());
+		s.append("/");
+		s.append("totalPrepaidLiters: ");
+		s.append(totalPrepaidLiters);
+		s.append("/");
+		s.append("remainingAmount: ");
+		s.append(getGasPump().getRemainingAmount());
+
+		return s.toString();
+	}
+}

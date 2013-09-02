@@ -1,0 +1,16 @@
+package net.bigpoint.assessment.gasstation;
+
+import java.util.Collection;
+
+import net.bigpoint.assessment.gasstation.GasType;
+import net.bigpoint.assessment.gasstation.exceptions.NotEnoughGasException;
+
+public interface GasStationStock {
+
+	public GasPumpStock prepaidOnBestGasPump(GasType type, double amountInLiters) throws NotEnoughGasException;
+
+	public Collection<GasPump> getGasPumps();
+
+	public void addGasPump(GasPump pump);
+
+}

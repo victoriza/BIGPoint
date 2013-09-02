@@ -1,0 +1,58 @@
+package net.bigpoint.assessment.gasstation.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.PriorityQueue;
+
+import net.bigpoint.assessment.gasstation.GasPump;
+import net.bigpoint.assessment.gasstation.GasPumpStock;
+import net.bigpoint.assessment.gasstation.GasStationStock;
+import net.bigpoint.assessment.gasstation.GasType;
+import net.bigpoint.assessment.gasstation.exceptions.NotEnoughGasException;
+
+public class GasStationStockImpl implements GasStationStock {
+
+	private final List<GasPump> gasPumps = new ArrayList<GasPump>();
+
+	private final PriorityQueue<GasPumpStock> gasPumpStocks = new PriorityQueue<GasPumpStock>();
+
+	public void addGasPump(GasPump gasPump) {
+		gasPumpStocks.add(new GasPumpStock(gasPump));
+		gasPumps.add(gasPump);
+	}
+
+	public List<GasPump> getGasPumps() {
+		return gasPumps;
+	}
+
+	/* (non-Javadoc)
+	 * @see net.bigpoint.assessment.gasstation.impl.GasStationStock#findBestGasPump(net.bigpoint.assessment.gasstation.GasType, double)
+	 */
+	public GasPumpStock findBestGasPump(GasType type, double amountInLiters)throws NotEnoughGasException{
+
+		GasPumpStock gasPump;
+		PriorityQueue<GasPumpStock> validGasPumps = new PriorityQueue<GasPumpStock>();
+
+		for (GasPumpStock gasPumpS : gasPumpStocks) {
+			if (gasPumpS.getGasPump().getGasType() == type && (gasPumpS.getGasPump().getRemainingAmount() - gasPumpS.getTotalPrepaidLiters()) >= amountInLiters) {
+				validGasPumps.add(gasPumpS);
+			}
+		}
+		if (validGasPumps == null || validGasPumps.isEmpty()) {
+			throw new NotEnoughGasException();
+		}
+		gasPump =  validGasPumps.poll();
+		gasPump.addPrepaid(amountInLiters);
+
+		return gasPump;
+	}
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		String newLine = System.getProperty("line.separator");
+		for (GasPumpStock gasPumpStock: gasPumpStocks) {
+			result.append( gasPumpStock.toString());
+			result.append(newLine);
+		}
+		return result.toString();
+	}
+}

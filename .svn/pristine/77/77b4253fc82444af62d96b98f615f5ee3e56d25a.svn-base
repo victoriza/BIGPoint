@@ -1,0 +1,70 @@
+package net.bigpoint.assessment.gasstation.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.logging.Logger;
+
+import net.bigpoint.assessment.gasstation.GasPump;
+import net.bigpoint.assessment.gasstation.GasPumpStock;
+import net.bigpoint.assessment.gasstation.GasStationStock;
+import net.bigpoint.assessment.gasstation.GasType;
+import net.bigpoint.assessment.gasstation.exceptions.NotEnoughGasException;
+
+public class GasStationStockImpl implements GasStationStock {
+
+	private final List<GasPump> gasPumps = new ArrayList<GasPump>();
+
+	private final PriorityQueue<GasPumpStock> gasPumpStocks = new PriorityQueue<GasPumpStock>();
+
+	private static Logger log = Logger.getLogger(GasStationStockImpl.class.getName());
+
+	public void addGasPump(GasPump gasPump) {
+		gasPumpStocks.add(new GasPumpStock(gasPump));
+		gasPumps.add(gasPump);
+	}
+
+	public List<GasPump> getGasPumps() {
+		return gasPumps;
+	}
+
+	public GasPumpStock prepaidOnBestGasPump(GasType type, double amountInLiters)throws NotEnoughGasException{
+
+		GasPumpStock gasPump;
+
+		synchronized (type) {
+			gasPump = findBestGasPump(type , amountInLiters);
+
+			if (gasPump == null) {
+				throw new NotEnoughGasException();
+			}
+			gasPump.addPrepaid(amountInLiters);
+		}
+		return gasPump;
+	}
+
+	public GasPumpStock findBestGasPump(GasType type, double amountInLiters)throws NotEnoughGasException{
+		for (GasPumpStock gasPumpS : gasPumpStocks) {
+//			log.info("Total: "+(double)(gasPumpS.getTotalLiters()));
+//			log.info("TotalP: "+(double)(gasPumpS.getTotalPrepaidLiters()));
+//			log.info("Amount: "+(double)(amountInLiters));
+			log.info("Dif: "+(double)(gasPumpS.getTotalLiters() - gasPumpS.getTotalPrepaidLiters()));
+
+			if (gasPumpS.getGasPump().getGasType() == type && (gasPumpS.getTotalLiters() >= amountInLiters)) {
+				return gasPumpS;
+			}
+		}
+		return null;
+	}
+
+
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		String newLine = System.getProperty("line.separator");
+		for (GasPumpStock gasPumpStock: gasPumpStocks) {
+			result.append( gasPumpStock.toString());
+			result.append(newLine);
+		}
+		return result.toString();
+	}
+}

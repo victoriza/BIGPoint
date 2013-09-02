@@ -1,0 +1,109 @@
+package es.moodbox.test;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import junit.framework.TestCase;
+import net.bigpoint.assessment.gasstation.GasPump;
+import net.bigpoint.assessment.gasstation.GasStation;
+import net.bigpoint.assessment.gasstation.GasStationImpl;
+import net.bigpoint.assessment.gasstation.GasType;
+import net.bigpoint.assessment.gasstation.exceptions.GasTooExpensiveException;
+import net.bigpoint.assessment.gasstation.exceptions.NotEnoughGasException;
+
+public class TestGasStationBase extends TestCase{
+
+	protected final static int MAX_CLIENTS = 1;
+
+	protected static int MAX_EXECUTORS = 10;
+
+	protected final static int MAX_WAITING_TIME = 600;
+
+	protected final ExecutorService clientExecutor = Executors.newFixedThreadPool(MAX_EXECUTORS);
+
+	protected static GasStation gasStation;
+
+	protected final static double DIESEL_PRICE = 2;
+	protected final static double REGULAR_PRICE = 2;
+	protected final static double SUPER_PRICE = 2;
+
+	protected final static double DIESEL_AMOUNT = 20;
+	protected final static double REGULAR_AMOUNT = 30;
+	protected final static double SUPER_AMOUNT = 40;
+
+	protected static Logger LOGGER = Logger.getLogger(TestGasStationBase.class.getName());
+
+	public void setUp() throws java.lang.Exception{
+		GasPump gasPumpD = new GasPump(GasType.DIESEL, DIESEL_AMOUNT);
+		GasPump gasPumpR = new GasPump(GasType.REGULAR, REGULAR_AMOUNT);
+		GasPump gasPumpS = new GasPump(GasType.SUPER, SUPER_AMOUNT);
+
+		gasStation = new GasStationImpl();
+
+		//prices
+		gasStation.setPrice(GasType.DIESEL, DIESEL_PRICE);
+		gasStation.setPrice(GasType.REGULAR, REGULAR_PRICE);
+		gasStation.setPrice(GasType.SUPER, SUPER_PRICE);
+
+		gasStation.addGasPump(gasPumpD);
+		gasStation.addGasPump(gasPumpR);
+		gasStation.addGasPump(gasPumpS);
+	}
+	public void tearDown() throws java.lang.Exception {
+		checkGasStation();
+	}
+	
+	public void testGasStationBase() {
+		assertNotNull(gasStation);
+		assertNotNull(gasStation.getGasPumps());
+	}
+	/**
+	 * Chaecks that the gasPump of a gasStation have positive or zero
+	 * gas amounts
+	 * 
+	 * @throws Exception
+	 */
+	private void checkGasStation() throws Exception{
+		for (GasPump gasP : gasStation.getGasPumps()) {
+			
+			if (gasP.getRemainingAmount() < 0 ){
+				throw new Exception("Negative Gas Amount!");
+			}
+		}
+	}
+
+	/**
+	 * GasClient simply calls buyGas and waits until ready in a non bloking way
+	 * 
+	 * @throws NotEnoughGasException 
+	 * @throws GasTooExpensiveException 
+	 * @author Víctor Suárez
+	 */
+	public class GasClient implements Runnable {
+
+		private final int clientId;
+		private final GasType gasType;
+		private final double amountInLiters;
+		private final double maxPricePerLiter;
+
+		GasClient(int clientId, GasType gasType, double amountInLiters, double maxPricePerLiter) {
+			this.clientId = clientId;
+			this.gasType = gasType;
+			this.amountInLiters = amountInLiters;
+			this.maxPricePerLiter = maxPricePerLiter;
+		}
+		public void run() {
+			try {
+				gasStation.buyGas(gasType, amountInLiters, maxPricePerLiter);
+			} catch (NotEnoughGasException e) {
+				LOGGER.log(Level.SEVERE, "NotEnoughGasException for clientId:"+clientId);
+			} catch (GasTooExpensiveException e) {
+				LOGGER.log(Level.SEVERE, "GasTooExpensiveException for clientId:"+clientId);
+			}
+		}
+	}
+
+}

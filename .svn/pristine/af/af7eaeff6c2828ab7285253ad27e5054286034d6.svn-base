@@ -1,0 +1,10 @@
+package net.bigpoint.assessment.gasstation;
+
+import net.bigpoint.assessment.gasstation.GasType;
+import net.bigpoint.assessment.gasstation.exceptions.NotEnoughGasException;
+
+public interface GasStationStock {
+
+	public abstract GasPumpStock findBestGasPump(GasType type, double amountInLiters) throws NotEnoughGasException;
+
+}
