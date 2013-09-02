@@ -31,10 +31,10 @@ public class GasStationImpl implements GasStation {
 	
 	public double buyGas(GasType type, double amountInLiters,double maxPricePerLiter) throws NotEnoughGasException,	GasTooExpensiveException {
 		
-		//check parameter, exception is throw if not valid
+		//check parameter, exception is thrown if not valid
 		checkParameters(type, amountInLiters, maxPricePerLiter);
 		
-		//check maxPricePerLiter, exception is throw if not valid
+		//check maxPricePerLiter, exception is thrown if not valid
 		checkGasTooExpensive(type, maxPricePerLiter);
 
 		//the price that the client will pay
@@ -44,10 +44,10 @@ public class GasStationImpl implements GasStation {
 			log.info("Asking - for G.T: "+type.name() + ", l: "+amountInLiters);
 
 			//Obtain the best gasPump for the combination GasType / liters
-			//based on first gas pump free with the desired combination
-			GasPumpStock gasPumpStock = gasStationStock.prepaidOnBestGasPump(type , amountInLiters);
+			//based on first free gas pump with the desired combination
+			GasPumpStock gasPumpStock = gasStationStock.prepayOnBestGasPump(type , amountInLiters);
 
-			//GasPump operation has to be thread safe, so be block one petition for GasPump at a time
+			//GasPump operation has to be thread safe, so be blocked one petition for GasPump at a time
 			log.info("Waiting - for G.T: "+type.name() + ", l: "+amountInLiters);
 			synchronized (gasPumpStock) {
 				doGasOperation(amountInLiters, gasPumpStock);

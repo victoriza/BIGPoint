@@ -15,15 +15,15 @@ import net.bigpoint.assessment.gasstation.exceptions.NotEnoughGasException;
 public interface GasStationStock {
 	
 	/**
-	 * Returns the best gas pump wraped in a gas pump stock for a client
-	 * based on time to wait and requested liters with the prepaid liters
+	 * Returns the best gas pump wrapped in a gas pump stock for a client
+	 * based on time to wait and requested liters.
 	 * 
 	 * @param type The type of gas the customer wants to buy
 	 * @param requestedLiters The amount of gas the customer wants to buy
 	 * @return the quickest option available if any
 	 * @throws NotEnoughGasException if there is no gas pump with enough gas
 	 */
-	public GasPumpStock prepaidOnBestGasPump(GasType type, double requestedLiters) throws NotEnoughGasException;
+	public GasPumpStock prepayOnBestGasPump(GasType type, double requestedLiters) throws NotEnoughGasException;
 	
 	/**
 	 * Retrieve the collection of gas pump

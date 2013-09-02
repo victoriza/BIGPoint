@@ -2,8 +2,8 @@ package net.bigpoint.assessment.gasstation;
 
 /**
  * This class is an implementation of a gas pump stock.
- * It wraps a gas  pump to be able to add prepaid amount to a gasPump
- * It means people waiting to fill gas.
+ * It wraps a gas pump to be able to add prepaid amount to a gasPump
+ * It means having a queue people waiting to fill gas.
  * 
  * It is not thread-safe It should only ever be used by one thread.
  */
@@ -49,7 +49,7 @@ public class GasPumpStock implements Comparable<GasPumpStock>{
 	
 	/**
 	 * The total prepaid amount on that gas pump stock
-	 * it cannot be bigger than the gas pump amount
+	 * it cannot be larger than the gas pump amount
 	 * 
 	 * @return
 	 */
@@ -58,7 +58,7 @@ public class GasPumpStock implements Comparable<GasPumpStock>{
 	}
 	
 	/**
-	 * Compare the gasp pump stock with the following criteria:
+	 * Compare the gas pump stock with the following criteria:
 	 * The gas pump with less liters to serve first
 	 */
 	public int compareTo(GasPumpStock p2){

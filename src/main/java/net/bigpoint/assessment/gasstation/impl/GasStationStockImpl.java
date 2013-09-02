@@ -13,7 +13,7 @@ import net.bigpoint.assessment.gasstation.exceptions.NotEnoughGasException;
 /**
  * This class is an implementation of a gas pump stock.
  * 
- * It is thread-safe syncronized by gas type.
+ * It is thread-safe synchronized by gas type.
  * 
  */
 public class GasStationStockImpl implements GasStationStock {
@@ -38,11 +38,11 @@ public class GasStationStockImpl implements GasStationStock {
 		return new ArrayList<GasPump>(gasPumps);
 	}
 
-	public GasPumpStock prepaidOnBestGasPump(GasType type, double requestedLiters)throws NotEnoughGasException{
+	public GasPumpStock prepayOnBestGasPump(GasType type, double requestedLiters)throws NotEnoughGasException{
 
 		GasPumpStock gasPump;
 		
-		//sync by gas type so no more than one client choose gas pump stock at a time.
+		//sync by gas type so no more than one client chooses a gas pump stock at a time.
 		//This avoid two clients going to the same gas pump and wait while others are empty
 		synchronized (type) {
 			gasPump = findBestGasPump(type , requestedLiters);
@@ -50,8 +50,8 @@ public class GasStationStockImpl implements GasStationStock {
 			if (gasPump == null) {
 				throw new NotEnoughGasException();
 			}
-			//IMPORTANT: we add the prepaid liters, so another we know that this gas pump has pending operations and
-			//it will cost more time to be ready to do more work
+			//IMPORTANT: we add the prepaid liters, so another client knows that this gas pump has pending operations and
+			//it will cost more time to be ready to pump more gas
 			gasPump.addPrepaid(requestedLiters);
 		}
 		return gasPump;
@@ -59,7 +59,7 @@ public class GasStationStockImpl implements GasStationStock {
 	/**
 	 * Finds the best gas pump stock for the client based on:
 	 * 1-Has enough gas of the desired type
-	 * 2-Time to end with the previous pumps
+	 * 2-Time to end with the previous waiting pumps (if any)
 
 	 * @param type gas type requested
 	 * @param requestedLiters requested liters
@@ -68,7 +68,7 @@ public class GasStationStockImpl implements GasStationStock {
 	 */
 	public GasPumpStock findBestGasPump(GasType type, double requestedLiters)throws NotEnoughGasException{
 		
-		//we use the PriorityQueue for sorting the gas pump stock for better performance
+		//we use the PriorityQueue to sort the gas pump stock for better performance
 		PriorityQueue<GasPumpStock> validGasPumpStocks = new PriorityQueue<GasPumpStock>();
 		
 		for (GasPumpStock gasPumpS : gasPumpStocks) {
@@ -76,7 +76,7 @@ public class GasStationStockImpl implements GasStationStock {
 				validGasPumpStocks.add(gasPumpS);
 			}
 		}
-		//we cannot do it
+		//We have no gas pump for that operation
 		if (validGasPumpStocks.isEmpty()){
 				throw new NotEnoughGasException();
 		}
