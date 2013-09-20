@@ -71,9 +71,9 @@ public class GasStationImpl implements GasStation {
 	 * @param amountInLiters The amount of gas the customer wants to buy. Nothing less than this amount is acceptable!
 	 * @param maxPricePerLiter The maximum price the customer is willing to pay per liter
 	 * 
-	 * @throws InvalidParameterException if amounts are below zero or we do not have price for the gas type
+	 * @throws IllegalArgumentException if amounts are below zero or we do not have price for the gas type
 	 */
-	private void checkParameters(GasType type, double amountInLiters, double maxPricePerLiter) throws InvalidParameterException{
+	private void checkParameters(GasType type, double amountInLiters, double maxPricePerLiter) throws IllegalArgumentException{
 		if (type == null || amountInLiters <= 0 || maxPricePerLiter < 0 || !prices.containsKey(type))
 			throw new InvalidParameterException();
 	}

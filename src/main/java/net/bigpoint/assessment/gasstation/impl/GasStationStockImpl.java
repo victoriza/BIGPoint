@@ -66,7 +66,7 @@ public class GasStationStockImpl implements GasStationStock {
 	 * @return gas pump if any null in other case
 	 * @throws NotEnoughGasException if there is not enough gas in any gas pump stock
 	 */
-	public GasPumpStock findBestGasPump(GasType type, double requestedLiters)throws NotEnoughGasException{
+	private GasPumpStock findBestGasPump(GasType type, double requestedLiters)throws NotEnoughGasException{
 		
 		//we use the PriorityQueue to sort the gas pump stock for better performance
 		PriorityQueue<GasPumpStock> validGasPumpStocks = new PriorityQueue<GasPumpStock>();
