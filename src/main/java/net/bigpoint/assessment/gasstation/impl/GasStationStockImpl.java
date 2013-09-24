@@ -23,12 +23,15 @@ public class GasStationStockImpl implements GasStationStock {
 	private final List<GasPumpStock> gasPumpStocks = new ArrayList<GasPumpStock>();
 	
 	/**
-	 * Add a gas pump to the gas pump collection
+	 * Add a gas pump to the gas pump collection in a sync way to avoid
+	 * concurrent modification exception
 	 * Add a gas pump stock to the gas pump stock collection
 	 */
 	public void addGasPump(GasPump gasPump) {
-		gasPumpStocks.add(new GasPumpStock(gasPump));
-		gasPumps.add(gasPump);
+		synchronized (gasPumpStocks) {
+			gasPumpStocks.add(new GasPumpStock(gasPump));
+			gasPumps.add(gasPump);
+		}
 	}
 	
 	/**
